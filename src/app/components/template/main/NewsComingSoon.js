@@ -61,7 +61,7 @@ export default function NewsComingSoon({ phase2Eta = "2026-04-01T00:00:00Z" }) {
   };
 
   return (
-    <section className="relative h-full md:min-h-screen w-full overflow-hidden flex items-center justify-center">
+    <section className="relative min-h-screen w-full overflow-hidden flex items-center justify-center">
       {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute -inset-24 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.12),transparent_35%),radial-gradient(circle_at_80%_30%,rgba(255,255,255,0.10),transparent_40%),radial-gradient(circle_at_50%_90%,rgba(255,255,255,0.08),transparent_45%)]" />

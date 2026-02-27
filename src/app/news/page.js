@@ -20,7 +20,7 @@ export default async function News() {
 
     return (
 
-        <div className="h-screen overflow-hidden bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 font-yekan-bakh text-white">
+        <div className=" overflow-hidden bg-linear-to-br from-slate-950 via-slate-900 to-slate-800 font-yekan-bakh text-white">
             {/* glow background accents */}
             <div className="pointer-events-none fixed inset-0 overflow-hidden">
                 <div className="absolute -top-24 right-10 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
