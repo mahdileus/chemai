@@ -5,7 +5,7 @@ import connectToDB from "@/configs/db";
 export async function PUT(req, { params }) {
   try {
     await connectToDB();
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     const updated = await Department.findByIdAndUpdate(id, body, { new: true });

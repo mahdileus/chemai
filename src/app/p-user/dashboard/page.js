@@ -1,10 +1,8 @@
 export const dynamic = "force-dynamic";
-
 import UserInfoBox from "@/app/components/template/p-user/dashboard/UserInfoBox";
-import DiscountesBox from "@/app/components/template/p-user/discountes/Discountes";
 import connectToDB from "@/configs/db";
 import { authUser } from "@/utils/auth-server";
-import Discount from "@/models/Discount";
+import Product from "@/app/components/template/p-user/my-product/Product";
 
 
 
@@ -12,28 +10,47 @@ import Discount from "@/models/Discount";
 export default async function Dashboard() {
   await connectToDB();
   const user = await authUser();
-      const discounts = await Discount.find({})
-          .sort({ createdAt: -1 }) // جدیدترین اول
-          .lean()
-          .limit(2);
+
+  const safeUser = user ? {
+    _id: String(user._id),
+    phone: user.phone || "",
+    email: user.email || "",
+    role: user.role || "USER",
+    firstName: user.firstName || "",
+    lastName: user.lastName || "",
+    accountType: user.accountType || "REAL",
+    nationalCode: user.nationalCode || "",
+    chemaiCode: user.chemaiCode || "",
+    iban: user.iban || "",
+    avatar: user.avatar || "",
+    legalInfo: user.legalInfo || {},
+  } : null;
+
+  <UserInfoBox user={safeUser} />
 
   return (
-    <section className="container mt-14 ">
+    <section className="container md:mt-14 mt-2 ">
+      <h2 className="text-gray-700 text-sm md:text-base text-center mb-10 bg-green-100 rounded-full p-2">لطفا برای اضافه کردن اطلاعات مثل شماره شبا روی دکمه ویرایش اطلاعات کلیک کنید . </h2>
       <UserInfoBox user={JSON.parse(JSON.stringify(user))} />
-      <div className="flex items-center justify-between mt-8 gap-8">
-        <div className="w-1/2 container mx-auto py-10 flex flex-col gap-6">
-          {discounts.length === 0 && (
-            <div className="w-full bg-white rounded-3xl">
-              <p className="text-center text-gray-500">هیچ کد تخفیفی پیدا نشد.</p>
-            </div>
-          )}
+      <div className="flex items-center justify-between gap-10 pt-20">
 
-          {discounts.map((item) => (
-            <DiscountesBox key={item._id} discount={JSON.parse(JSON.stringify(item))} />
-          ))}
+        <div className="md:w-1/2 w-full">
+          <div className="flex justify-between items-center gap-4 mb-8">
+            <h2 className="md:text-xl text-sm font-semibold text-primary">
+              محصولات من
+            </h2>
+
+            <button className="bg-primary text-white text-sm font-medium rounded-xl hover:opacity-90 transition-all md:py-2 md:px-5 px-2.5 py-1 flex justify-center items-center cursor-pointer select-none">
+              مشاهده همه
+            </button>
+          </div>
+          <Product />
+          <Product />
+          <Product />
         </div>
-        <div className="w-1/2">
-          <UserInfoBox />
+        <div className="md:flex items-center justify-center md:w-1/2 w-full hidden">
+          <h2>          تیکتی هنوز ثبت نشده است
+          </h2>
         </div>
       </div>
     </section>

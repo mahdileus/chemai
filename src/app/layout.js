@@ -1,16 +1,14 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "پت شاپ زینو",
-  description: "فروشگاه و خدمات تخصصی پت",
+  title: "کمای خرید بدون واسطه !" ,
+  description: "خرید و فروش بدون واسطه",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="fa">
-      <body
-        
-      >
+      <body>
         {children}
       </body>
     </html>

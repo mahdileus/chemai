@@ -1,8 +1,10 @@
 "use client"
 
-export default function ShapeTwo() {
+export default function Shape() {
 return (
-<div className="block absolute top-[-700px] left-[-700px] bg-linear-to-t from-primary to-secondery
- w-[1050px] h-[1050px] md:w-[1300px] md:h-[1300px] -z-40 rounded-full" />
+<div className="hidden md:block absolute -right-36 -top-28 bg-linear-to-br from-primary to-blue-600
+ md:w-[700px] md:h-[700px] -z-10 [clip-path:polygon(25%_6%,75%_6%,100%_50%,75%_94%,25%_94%,0%_50%)]
+                  rounded-lg shadow-lg"
+  />
 );
 }

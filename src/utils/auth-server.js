@@ -1,103 +1,160 @@
+import "server-only";
+import crypto from "crypto";
 import { hash, compare } from "bcryptjs";
 import { sign, verify } from "jsonwebtoken";
 import { cookies } from "next/headers";
 import UserModel from "@/models/User";
 import connectToDB from "@/configs/db";
 
-// --- Password ---
-const hashPassword = async (password) => {
-  return await hash(password, 12);
+const ONE_DAY = 60 * 60 * 24;
+
+export const ACCESS_COOKIE_NAME = "token";
+export const REFRESH_COOKIE_NAME = "refreshToken";
+
+const cookieBase = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  path: "/",
 };
 
-const verifyPassword = async (password, hashedPassword) => {
-  return await compare(password, hashedPassword);
-};
+const ACCESS_EXPIRES_IN = "1h";
+const REFRESH_EXPIRES_IN = "45d";
+
+const hashToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
+
+// --- Cookies ---
+export async function setAuthCookies({ accessToken, refreshToken }) {
+  const cookieStore = await cookies();
+
+  cookieStore.set(ACCESS_COOKIE_NAME, accessToken, {
+    ...cookieBase,
+    maxAge: 60 * 60, // 1h
+  });
+
+  cookieStore.set(REFRESH_COOKIE_NAME, refreshToken, {
+    ...cookieBase,
+    maxAge: 45 * ONE_DAY, // 45 days
+  });
+}
+
+export async function clearAuthCookies() {
+  const cookieStore = await cookies();
+  cookieStore.set(ACCESS_COOKIE_NAME, "", { ...cookieBase, maxAge: 0 });
+  cookieStore.set(REFRESH_COOKIE_NAME, "", { ...cookieBase, maxAge: 0 });
+}
+
+// --- Password ---
+export const hashPassword = async (password) => hash(password, 12);
+export const verifyPassword = async (password, hashedPassword) => compare(password, hashedPassword);
 
 // --- Tokens ---
-const generateAccessToken = (data) => {
-  // Access Token کوتاه (مثلاً 1 ساعت)
-  return sign({ ...data }, process.env.AccessTokenSecretKey, {
-    expiresIn: "1h",
-  });
-};
+export const generateAccessToken = (data) =>
+  sign({ ...data }, process.env.AccessTokenSecretKey, { expiresIn: ACCESS_EXPIRES_IN });
 
-const verifyAccessToken = (token) => {
+export const verifyAccessToken = (token) => {
   try {
     return verify(token, process.env.AccessTokenSecretKey);
-  } catch (err) {
-    return false;
+  } catch {
+    return null;
   }
 };
 
-const generateRefreshToken = (data) => {
-  // Refresh Token طولانی (مثلاً 15 روز)
-  return sign({ ...data }, process.env.RefreshTokenSecretKey, {
-    expiresIn: "15d",
-  });
-};
+export const generateRefreshToken = (data) =>
+  sign({ ...data }, process.env.RefreshTokenSecretKey, { expiresIn: REFRESH_EXPIRES_IN });
 
-const verifyRefreshToken = (token) => {
+export const verifyRefreshToken = (token) => {
   try {
     return verify(token, process.env.RefreshTokenSecretKey);
-  } catch (err) {
-    return false;
+  } catch {
+    return null;
   }
 };
 
 // --- Auth helpers ---
-const authUser = async () => {
+export const authUser = async () => {
   await connectToDB();
+
   const cookieStore = await cookies();
-  const token = cookieStore.get("token");
-  if (!token) return null;
+  const token = cookieStore.get(ACCESS_COOKIE_NAME);
+  if (!token?.value) return null;
 
-  const tokenPayload = verifyAccessToken(token.value);
-  if (!tokenPayload) return null;
+  const payload = verifyAccessToken(token.value);
+  if (!payload) return null;
 
-  const user = await UserModel.findOne({ phone: tokenPayload.phone });
-  return user || null;
-};
+  const query = payload.sub
+    ? { _id: payload.sub }
+    : payload.phone
+      ? { phone: payload.phone }
+      : null;
 
-const authAdmin = async () => {
-  await connectToDB();
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token");
-  if (!token) return null;
+  if (!query) return null;
 
-  const tokenPayload = verifyAccessToken(token.value);
-  if (!tokenPayload) return null;
+const user = await UserModel.findOne({ phone: payload.phone })
+  .select("_id phone email role firstName lastName accountType nationalCode iban chemaiCode legalInfo avatar")
+  .lean();
 
-  const user = await UserModel.findOne({ phone: tokenPayload.phone });
-  if (!user || user.role !== "ADMIN") return null;
+  if (!user) return null;
+
+  if (user.status && user.status !== "ACTIVE") return null;
+  if (user.isBlocked && user.blockedUntil && user.blockedUntil > new Date()) return null;
 
   return user;
 };
 
-// --- Refresh token flow ---
-const refreshAccessToken = async () => {
-  await connectToDB();
-  const cookieStore = await cookies();
-  const refreshToken = cookieStore.get("refreshToken");
-  if (!refreshToken) return null;
+export const authAdmin = async () => {
+  const user = await authUser();
+  if (!user) return null;
+  if (user.role !== "ADMIN") return null;
+  return user;
+};
 
-  const payload = verifyRefreshToken(refreshToken.value);
+// --- Refresh token flow ---
+export const refreshAccessToken = async () => {
+  await connectToDB();
+
+  const cookieStore = await cookies();
+  const refreshCookie = cookieStore.get(REFRESH_COOKIE_NAME);
+  if (!refreshCookie?.value) return null;
+
+  const payload = verifyRefreshToken(refreshCookie.value);
   if (!payload) return null;
 
-  const user = await UserModel.findOne({ phone: payload.phone });
+  const query = payload.sub
+    ? { _id: payload.sub }
+    : payload.phone
+      ? { phone: payload.phone }
+      : null;
+
+  if (!query) return null;
+
+  // refreshTokenHash باید در User داشته باشی (پیشنهاد)
+  const user = await UserModel.findOne(query).select(
+    "_id phone role status isBlocked blockedUntil refreshTokenHash"
+  );
   if (!user) return null;
 
-  const newAccessToken = generateAccessToken({ phone: user.phone });
+  if (user.status && user.status !== "ACTIVE") return null;
+  if (user.isBlocked && user.blockedUntil && user.blockedUntil > new Date()) return null;
+
+  // ✅ چک سروری refresh token (اگر hash ذخیره می‌کنی)
+  if (user.refreshTokenHash) {
+    const incomingHash = hashToken(refreshCookie.value);
+    if (incomingHash !== user.refreshTokenHash) return null;
+  }
+
+  const newAccessToken = generateAccessToken({
+    sub: String(user._id),
+    phone: user.phone,
+    role: user.role,
+  });
+
   return { accessToken: newAccessToken, user };
 };
 
-export {
-  hashPassword,
-  verifyPassword,
-  generateAccessToken,
-  verifyAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken,
-  authUser,
-  authAdmin,
-  refreshAccessToken,
+// --- Helpers for login flow ---
+export const persistRefreshToken = async ({ userId, refreshToken }) => {
+  await connectToDB();
+  const refreshTokenHash = hashToken(refreshToken);
+  await UserModel.updateOne({ _id: userId }, { $set: { refreshTokenHash } });
 };

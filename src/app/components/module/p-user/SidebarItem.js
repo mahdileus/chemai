@@ -11,10 +11,10 @@ export default function SidebarItem({ icon, label, href, onClick }) {
     return (
       <div
         onClick={onClick}
-        className={`flex items-center gap-3 px-3 py-2 rounded-full transition-all cursor-pointer 
-          hover:bg-secondery hover:text-white text-secondery`}
+        className={`flex items-center gap-3 md:px-3 md:bg-[#e6f0ff] md:py-2 rounded-full transition-all cursor-pointer 
+          hover:bg-primary hover:text-white text-primary`}
       >
-        <span className="text-xl text-green-500 ">{icon}</span>
+        <span className="text-xl text-white bg-primary rounded-full p-1 ">{icon}</span>
         <span className="hidden md:block">{label}</span>
       </div>
     );
@@ -24,13 +24,15 @@ export default function SidebarItem({ icon, label, href, onClick }) {
   return (
     <Link
       href={href}
-      className={`flex items-center gap-3 px-3 py-2 rounded-full transition-all cursor-pointer 
-        hover:bg-secondery hover:text-white ${
-          isActive ? "bg-secondery text-white font-bold w-full" : "text-secondery"
+      className={`flex items-center gap-3 md:px-3 md:py-2 md:bg-[#e6f0ff] rounded-xl md:rounded-full transition-all cursor-pointer 
+        hover:bg-primary hover:text-white ${isActive ? " md:bg-primary text-primary md:text-white font-bold w-full" : "text-gray-700"
         }`}
     >
-      <span className="text-xl text-green-500 ">{icon}</span>
-      <span className="hidden md:block">{label}</span>
+      <div className="flex flex-col md:flex-row items-center justify-center gap-2">
+        <span className="text-xl text-primary md:text-white md:bg-primary rounded-full p-1  ">{icon}</span>
+        <span className="block text-center">{label}</span>
+      </div>
+
     </Link>
   );
 }

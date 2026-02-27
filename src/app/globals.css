@@ -4,8 +4,8 @@
 :root {
   --background: #fff;
   --foreground: #ededed;
-  --color-primary: #5217f6;
-  --color-secondery: #0F295D;
+  --color-primary: #403cf1;
+  --color-secondery: #ff8d08;
   --color-third: #212341;
   --color-blue-shadow: #2C00A7;
   --color-super-dark-blue: #16153A;
@@ -24,8 +24,8 @@
 }
 
 @theme {
-  --color-primary: #5217f6;
-  --color-secondery: #0F295D;
+  --color-primary: #403cf1;
+  --color-secondery: #ff8d08;
   --color-third: #212341;
   --font-yekan-bakh: var(--font-yekan-bakh);
 
@@ -112,6 +112,23 @@ body {
     text-align: justify;
     text-align-last: center;
   }
+  .clip-hex {
+  clip-path: polygon(
+    25% 5%, 
+    75% 5%, 
+    100% 50%, 
+    75% 95%, 
+    25% 95%, 
+    0% 50%
+  );
+}
+.filter-pill {
+  @apply px-4 py-2 rounded-xl border border-gray-200 backdrop-blur-2xl  bg-[#f5f5f53d] shadow-sm
+         hover:border-orange-400 focus:outline-none text-black/85
+         min-w-[150px] shrink-0;
+}
+
+
 
   .swal-modal {
     font-family: yekan-bakh !important;
@@ -120,12 +137,12 @@ body {
 
 
   .swal-title {
-    color: #0F295D !important;
+    color: #303030 !important;
   }
 
   .swal-button {
-    background-color: #5217f6 !important;
-    border-bottom: 4px #2C00A7 !important;
+    background-color: #3187fc !important;
+    border-bottom: 4px #3187fc !important;
   }
 
   .swal-button--cancel {
@@ -254,9 +271,5 @@ body {
   .animate-spin-slow {
     animation: spin-slow 20s linear infinite;
   }
-
-
-
-
 
 }

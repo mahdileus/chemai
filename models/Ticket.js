@@ -1,49 +1,46 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
-const ticketSchema = new mongoose.Schema(
+const ticketSchema = new Schema(
   {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    body: {
-      type: String,
-      required: true,
-    },
-    user: {
-      type: mongoose.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    department: {
-      type: mongoose.Types.ObjectId,
-      ref: "Department",
-      required: true,
-    },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+
+    // اگر ادمین/پشتیبان assign شد
+    assignee: { type: Schema.Types.ObjectId, ref: "User", default: null, index: true },
+
+    subject: { type: String, required: true, trim: true },
+    category: { type: String, trim: true, default: "" }, // مثلا "پرداخت" "سفارش" ...
+
     status: {
       type: String,
-      enum: ["pending", "answered", "closed"],
-      default: "pending",
+      enum: ["OPEN", "WAITING_USER", "WAITING_SUPPORT", "CLOSED"],
+      default: "OPEN",
+      index: true,
     },
+
     priority: {
       type: String,
-      enum: ["low", "medium", "high"],
-      default: "medium",
+      enum: ["LOW", "MEDIUM", "HIGH", "URGENT"],
+      default: "MEDIUM",
+      index: true,
     },
-    replies: [
-      {
-        user: { type: mongoose.Types.ObjectId, ref: "User", required: true },
-        message: { type: String, required: true },
-        createdAt: { type: Date, default: Date.now },
-      },
-    ],
+
+    // لینک اختیاری به سفارش/پیش‌فاکتور...
+    refType: {
+      type: String,
+      enum: ["Order", "PurchaseRequest", "ProformaInvoice", ""],
+      default: "",
+      index: true,
+    },
+    refId: { type: Schema.Types.ObjectId, default: null, index: true },
+
+    lastMessageAt: { type: Date, default: Date.now, index: true },
+    closedAt: { type: Date, default: null },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-const Ticket = mongoose.models.Ticket || mongoose.model("Ticket", ticketSchema);
+ticketSchema.index({ createdBy: 1, status: 1, lastMessageAt: -1 });
+ticketSchema.index({ assignee: 1, status: 1, lastMessageAt: -1 });
 
-export default Ticket;
+export default mongoose.models.Ticket || mongoose.model("Ticket", ticketSchema);

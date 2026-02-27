@@ -1,15 +1,18 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const otpSchema = new mongoose.Schema(
   {
-    phone: {
+    phone: { type: String, required: true, index: true },
+
+    purpose: {
       type: String,
-      required: true,
+      enum: ["signup", "login", "change_phone", "reset_password"],
+      default: "signup",
       index: true,
     },
 
-    code: {
-      type: String, // هش شده ذخیره کن
+    codeHash: {
+      type: String,
       required: true,
       select: false,
     },
@@ -17,23 +20,19 @@ const otpSchema = new mongoose.Schema(
     expiresAt: {
       type: Date,
       required: true,
+      // index: true  ❌ این را حذف کن تا duplicate نشه
     },
 
-    attempts: {
-      type: Number,
-      default: 0,
-    },
-
-    blockedUntil: {
-      type: Date,
-      default: null,
-    },
-
-    createdAt: {
-      type: Date,
-      default: Date.now,
-      expires: 120, // حذف خودکار بعد ۲ دقیقه
-    },
-  }
+    attempts: { type: Number, default: 0 },
+    blockedUntil: { type: Date, default: null },
+  },
+  { timestamps: true }
 );
+
+// TTL دقیق روی expiresAt
+otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+// فقط یک OTP فعال برای هر phone+purpose
+otpSchema.index({ phone: 1, purpose: 1 }, { unique: true });
+
 export default mongoose.models.Otp || mongoose.model("Otp", otpSchema);

@@ -20,19 +20,19 @@ export default function MiddleSlider() {
       className="w-full h-full rounded-xl overflow-hidden"
     >
       <SwiperSlide>
-        <img src="/images/thinslider-1.jpg" className="w-full h-full object-cover" />
+        <img src="/images/000.jpg" className="w-full h-full object-cover" />
       </SwiperSlide>
       <SwiperSlide>
-        <img src="/images/thinslider-2.jpg" className="w-full h-full object-cover" />
+        <img src="/images/000.jpg" className="w-full h-full object-cover" />
       </SwiperSlide>
       <SwiperSlide>
-        <img src="/images/thinslider-3.jpg" className="w-full h-full object-cover" />
+        <img src="/images/000.jpg" className="w-full h-full object-cover" />
       </SwiperSlide>
       <SwiperSlide>
-        <img src="/images/thinslider-4.jpg" className="w-full h-full object-cover" />
+        <img src="/images/000.jpg" className="w-full h-full object-cover" />
       </SwiperSlide>
       <SwiperSlide>
-        <img src="/images/thinslider-5.jpg" className="w-full h-full object-cover" />
+        <img src="/images/000.jpg" className="w-full h-full object-cover" />
       </SwiperSlide>
     </Swiper>
   </div>

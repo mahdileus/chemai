@@ -1,60 +1,28 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { FaXTwitter, FaWhatsapp } from "react-icons/fa6";
-import { PiTelegramLogo, PiInstagramLogo, PiYoutubeLogo } from "react-icons/pi"
-import { HiOutlineArrowLongLeft } from "react-icons/hi2"
-export default function AboutUs() {
+
+export default function AboutHeader() {
+
+
     return (
-        <div className="container mx-auto px-4 my-12">
-
-            <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-6">
-
-                {/* متن و دکمه‌ها */}
-                <div className="w-full md:w-1/2 flex flex-col items-center md:items-start">
-                    <h2 className="text-3xl font-bold bg-linear-to-r from-primary to-secondery bg-clip-text text-transparent text-center md:text-left">
-                        درباره ما
-                    </h2>
-                    <hr className="border-t-4 border-primary w-10 rounded-full my-3" />
-                    <p className="description text-justify text-sm md:text-base px-2 md:px-0">
-                        اگر قصد دارید برای شغل خود یک وبسایت راه اندازی کنید باید توجه داشته باشید که یکی از مهمترین بخش ها طراحی رابط کاربری آن است که نقش اساسی در جذب و حفظ کاربر دارد. حتی اگر مطالب و محصولات حرفه ای داشته باشید اما سایت شما رابط کاربری ضعیفی داشته باشد ، کاربر آن را ترک میکند و تمام هزینه و زمان شما هدر خواهد رفت و شما با گروهی از مخاطبان ناراضی روبرو خواهید شد ، اتفاقی که با یک انتخاب اصولی میشود از آن جلوگیری کرد و با ارائه یک طرح حرفه ای مخاطبان خود را دائمی کرده و اعتماد آنها را جذب کرد فقط باید توجه داشته باشید که یک طراح حرفه ای را انتخاب کنید که بتواند خروجی استاندارد و مطابق زمینه کاری شما ارائه دهد.                    </p>
-
-                    <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mt-4">
-                        <Link
-                            href="/posts"
-                            className="flex group justify-center md:justify-start items-center py-2 px-4 transition-all rounded-full gap-6 w-full md:w-44 bg-green-500 border-b-4 border-b-green-600 hover:border-b-[#6e7e9f91] hover:bg-secondery"
-                        >
-                            <p className="font-yekan-bakh text-base font-semibold text-white">مشاهده همه</p>
-                            <span className="w-10 h-8 relative bg-secondery group-hover:rounded-full group-hover:bg-green-600 rounded-l-full">
-                                <HiOutlineArrowLongLeft
-                                    size={40}
-                                    className="absolute text-white group-hover:-translate-x-2 transition-all -top-1 bottom-0 -right-4 left-0 z-50"
-                                />
-                            </span>
-                        </Link>
-
-                        <div className="flex gap-4 mt-5 text-xl justify-center md:justify-start text-third font-bold">
-                            <a href="https://www.instagram.com/t1w.ir/">
-                                <PiInstagramLogo size={24} className="hover:text-primary cursor-pointer" />
-                            </a>
-                            <a href="https://t.me/09125673763">
-                                <PiTelegramLogo size={24} className="hover:text-primary cursor-pointer" />
-                            </a>
-                            <PiYoutubeLogo size={24} className="hover:text-primary cursor-pointer" />
-                            <FaWhatsapp size={24} className="hover:text-primary cursor-pointer" />
-                            <FaXTwitter size={24} className="hover:text-primary cursor-pointer" />
-                        </div>
+        <>
+            <section className=" my-20 font-yekan-bakh">
+                {/* about us section */}
+                <div className="container justify-between items-center ">
+                    <div className="w-full text-justify">
+                        <h1 className="text-4xl font-bold text-center md:text-right text-primary">شرکت <strong className="text-orange-500">کمای</strong></h1>
+                        <h4 className="text-base mt-3">کمای اولین و بزرگترین بازارگاه مواد اولیه و جانبی در زنجیره تامین مواد شیمیایی ایران
+                            کمای یک پلتفرم B2B با تعامل محتوایی در جهت رفع دغدغه‌ها مشکلات فروش برای تامین کنندگان تولیدکنندگان و رفع دغدغه خریداران با تسهیل در روند خرید و فروش مواد اولیه شیمیایی می‌باشد
+                            حذف دغدغه لجستیک که از اصلی‌ترین مشکلات هم برای خریداران و هم برای تامین کنندگان تولید کنندگان است از ویژگی‌های مهم و برجسته کمای است
+                            خریداران امکان مقایسه قیمت و شرایط خرید و کیفیت را در همه محصولات از بین  تامین کنندگان مختلف دارا هستند
+                            کمای برطرف کننده تمام نیازهای خرید و فروش مواد اولیه شیمیایی ایران
+                        </h4>
                     </div>
+
                 </div>
 
-                {/* تصویر */}
-                <div className="w-full md:w-1/2 flex justify-center md:justify-end mt-6 md:mt-0">
-                    <img src="/images/Group-151.png" className="w-full h-auto max-w-sm md:max-w-full" />
-                </div>
+            </section>
 
-            </div>
-        </div>
-
-
-    )
+        </>
+    );
 }

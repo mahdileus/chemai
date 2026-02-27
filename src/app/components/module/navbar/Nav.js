@@ -5,9 +5,10 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { name: "صفحه اصلی", path: "/" },
-  { name: "فروشگاه", path: "/shop" },
-  { name: "مقالات", path: "/web-design" },
-  { name: "درباره ما", path: "/about-us" },
+  { name: "بازارگاه", path: "/shop" },
+  { name: "پلن ها", path: "/plans" },
+  { name: "اخبار", path: "#" },
+  { name: "درباره ما", path: "#" },
   { name: "تماس با ما", path: "/contact-us" },
 ];
 
@@ -15,7 +16,7 @@ export default function Nav() {
   const pathName = usePathname();
 
   return (
-    <nav className="hidden lg:flex items-center justify-center gap-6 font-yekan-bakh text-secondery text-base lg:text-lg pt-4">
+    <nav className="hidden lg:flex items-center justify-center gap-6 font-yekan-bakh text-white/80 text-base lg:text-lg pt-4">
       {links.map(({ name, path }, index) => {
         const isActive = path === pathName;
         return (
@@ -24,8 +25,8 @@ export default function Nav() {
             href={path}
             className={`
               px-3 py-1 font-medium transition-all duration-200 
-              hover:text-green-500 hover:scale-105
-              ${isActive ? "text-green-500 border-b-2 border-green-500 scale-105" : ""}
+              hover:text-white hover:scale-105
+              ${isActive ? "text-white border-b-2 border-secondery scale-105" : ""}
             `}
           >
             {name}

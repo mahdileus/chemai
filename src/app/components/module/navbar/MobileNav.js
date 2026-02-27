@@ -13,20 +13,20 @@ const links = [
         path: "/",
     },
     {
-        name: " داروخانه",
-        path: "/seo",
+        name: " داستان کمای",
+        path: "#",
     },
     {
         name: " مقالات ",
-        path: "/web-design",
+        path: "#",
     },
     {
         name: "  درباره ما",
-        path: "/programing",
+        path: "#",
     },
     {
         name: "تماس با ما ",
-        path: "/portfolios",
+        path: "/contact-us",
     },
 ];
 

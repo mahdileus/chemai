@@ -9,21 +9,26 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/thumbs";
 
-export default function ProductGallery({ images = [], title = "محصول" }) {
+export default function ProductGallery() {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const mainSwiperRef = useRef(null);
 
-  const gallery = images.length
-    ? images
-    : ["/images/placeholder.jpg"];
+  // ✅ تصاویر کاملاً استاتیک
+  const gallery = [
+    "/images/p-1.jpg",
+    "/images/p-5.jpg",
+    "/images/p-3.jpg",
+    "/images/p-4.jpg",
+    "/images/p-2.jpg",
+  ];
 
-
+  const title = "محصول نمونه";
 
   return (
-
     <div className="w-full product-gallery flex flex-col gap-6">
+      
       {/* تصویر اصلی */}
-      <div className="w-full h-[280px] sm:h-[360px] md:h-[420px] lg:h-[520px] rounded-3xl bg-white border border-green-500 overflow-hidden">
+      <div className="w-full h-[280px] sm:h-[360px] md:h-[420px] lg:h-[520px] rounded-3xl bg-white border border-gray-200 overflow-hidden">
         <Swiper
           modules={[Navigation, Thumbs]}
           navigation
@@ -38,7 +43,7 @@ export default function ProductGallery({ images = [], title = "محصول" }) {
         >
           {gallery.map((src, i) => (
             <SwiperSlide key={i}>
-              <div className="w-full h-full flex items-center justify-center bg-white">
+              <div className="w-full h-full flex items-center justify-center bg-white relative">
                 <Image
                   src={src}
                   alt={`${title} - ${i}`}
@@ -68,36 +73,35 @@ export default function ProductGallery({ images = [], title = "محصول" }) {
         >
           {gallery.map((src, i) => (
             <SwiperSlide key={i}>
-              <div className="w-full aspect-square rounded-xl border overflow-hidden bg-white hover:border-indigo-500 transition">
+              <div className="w-full aspect-square rounded-xl border overflow-hidden bg-white hover:border-primary transition relative">
                 <Image
                   src={src}
                   alt={`${title} thumb ${i}`}
                   fill
-                  className="object-cover border border-green-500 rounded-xl"
+                  className="object-cover border border-gray-200 rounded-xl"
                 />
               </div>
             </SwiperSlide>
           ))}
         </Swiper>
       </div>
+
       <style jsx global>{`
-  /* فقط استایل فلش‌های این اسلایدر */
-  .product-gallery .swiper-button-next,
-  .product-gallery .swiper-button-prev {
-    color: #4f46e5 !important; /* primary */
-  }
+        .product-gallery .swiper-button-next,
+        .product-gallery .swiper-button-prev {
+          color: #4f46e5 !important;
+        }
 
-  .product-gallery .swiper-button-next:hover,
-  .product-gallery .swiper-button-prev:hover {
-    color: #4338ca !important;
-  }
+        .product-gallery .swiper-button-next:hover,
+        .product-gallery .swiper-button-prev:hover {
+          color: #4338ca !important;
+        }
 
-  /* استایل thumb فعال */
-  .product-gallery .swiper-slide-thumb-active div {
-    border-color: #4f46e5 !important;
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
-  }
-`}</style>
+        .product-gallery .swiper-slide-thumb-active div {
+          border-color: #4f46e5 !important;
+          box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+        }
+      `}</style>
     </div>
   );
 }

@@ -1,51 +1,51 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+const { Schema } = mongoose;
 
-const orderSchema = new mongoose.Schema(
+const orderTimelineSchema = new Schema(
   {
-    user: { type: mongoose.Types.ObjectId, ref: "User", required: true },
+    status: { type: String, trim: true, required: true },
+    by: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    note: { type: String, trim: true, default: "" },
+    at: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
 
-    products: [
-      {
-        product: { type: mongoose.Types.ObjectId, ref: "Product" },
-        name: String,
-        price: Number,
-        quantity: { type: Number, default: 1 },
-        thumbnail: String,
-      },
-    ],
+const orderSchema = new Schema(
+  {
+    purchaseRequest: { type: Schema.Types.ObjectId, ref: "PurchaseRequest", required: true, index: true },
+    proforma: { type: Schema.Types.ObjectId, ref: "ProformaInvoice", required: true, index: true },
 
-    totalAmount: { type: Number, required: true },
+    buyer: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    seller: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+
+    orderNo: { type: String, required: true, unique: true, index: true },
 
     status: {
       type: String,
-      enum: ["pending", "paid", "failed", "shipped", "delivered", "cancelled"],
-      default: "pending",
+      enum: [
+        "CONFIRMED",
+        "INVOICED",
+        "PAID",
+        "FULFILLING",
+        "FULFILLED",
+        "CANCELLED",
+      ],
+      default: "CONFIRMED",
+      index: true,
     },
 
-    payment: {
-      gateway: { type: String },
-      authority: { type: String },
-      refId: { type: String },
-      paidAt: { type: Date },
-    },
+    timeline: { type: [orderTimelineSchema], default: [] },
 
-    // Snapshot آدرس (برای اینکه بعداً تغییر نکند)
-    shipping: {
-      address: { type: String, required: true },
-      city: { type: String },
-      postalCode: { type: String },
-      phone: { type: String },
-      deliveryMethod: { type: String },
-      trackingNumber: { type: String }, // کد پیگیری
-    },
-
-    coupon: {
-      code: { type: String },
-      discount: { type: Number },
+    totals: {
+      grandTotal: { type: Number, default: 0, min: 0 },
+      currency: { type: String, trim: true, default: "IRR" },
     },
   },
   { timestamps: true }
 );
 
-const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
-module.exports = Order;
+orderSchema.index({ buyer: 1, createdAt: -1 });
+orderSchema.index({ seller: 1, status: 1, createdAt: -1 });
+
+export default mongoose.models.Order || mongoose.model("Order", orderSchema);

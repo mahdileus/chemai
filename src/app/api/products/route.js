@@ -1,229 +1,213 @@
-// src/app/api/admin/products/route.js   (یا اگر عمومیه: /api/products/route.js)
 import { NextResponse } from "next/server";
-import connectToDB from "@/configs/db";
-import Product from "@/models/Product";
-import Category from "@/models/ProductCategory";
-import Brand from "@/models/Brand";
-import { authAdmin } from "@/utils/auth-server";
-import { writeFile } from "fs/promises";
-import path from "path";
-import { randomUUID } from "crypto";
-import slugify from "slugify";
 import mongoose from "mongoose";
+import connectToDB from "@/configs/db";
+import { authUser } from "@/utils/auth-server";
+import Product from "@/models/Product";
+import Category from "@/models/Category";
 
+export const runtime = "nodejs";
 
-// تنظیمات آپلود
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+/* ----------------------------- Helpers ----------------------------- */
 
-// تابع آپلود امن
-async function uploadFile(file) {
-  if (!file || !ALLOWED_TYPES.includes(file.type)) {
-    throw new Error("نوع فایل مجاز نیست");
-  }
-  if (file.size > MAX_FILE_SIZE) {
-    throw new Error("حجم فایل بیشتر از 5 مگابایت است");
-  }
-
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  const filename = `${Date.now()}-${randomUUID()}${path.extname(file.name)}`;
-  const filepath = path.join(UPLOAD_DIR, filename);
-
-  await writeFile(filepath, buffer);
-  return `/uploads/${filename}`;
+function isValidObjectId(id) {
+  return mongoose.Types.ObjectId.isValid(id);
 }
 
-// ===================== POST - ایجاد محصول (فقط ادمین) =====================
-export async function POST(request) {
-  try {
-    await connectToDB();
-    const isAdmin = await authAdmin(request);
-    if (!isAdmin) {
-      return NextResponse.json({ error: "دسترسی ممنوع" }, { status: 403 });
-    }
-
-    const formData = await request.formData();
-
-    const title = formData.get("title")?.toString();
-    const price = Number(formData.get("price"));
-    const category = formData.get("category");
-
-    if (!title || !price || !category) {
-      return NextResponse.json(
-        { error: "عنوان، قیمت و دسته‌بندی الزامی هستند" },
-        { status: 422 }
-      );
-    }
-
-    // اعتبارسنجی دسته‌بندی
-    const categoryExists = await Category.findById(category);
-    if (!categoryExists) {
-      return NextResponse.json({ error: "دسته‌بندی نامعتبر" }, { status: 422 });
-    }
-
-    // اعتبارسنجی برند
-    const brandId = formData.get("brand");
-    if (brandId) {
-      const brandExists = await Brand.findById(brandId);
-      if (!brandExists) return NextResponse.json({ error: "برند نامعتبر" }, { status: 422 });
-    }
-
-    // آپلود تصاویر
-    let thumbnail = "/images/default-product.png";
-    const thumbnailFile = formData.get("thumbnail");
-    if (thumbnailFile && thumbnailFile.size > 0) {
-      thumbnail = await uploadFile(thumbnailFile);
-    }
-
-    const gallery = [];
-    const galleryFiles = formData.getAll("gallery");
-    for (const file of galleryFiles) {
-      if (file && file.size > 0) {
-        gallery.push(await uploadFile(file));
-      }
-    }
-
-    // slug
-    const rawSlug = formData.get("slug")?.toString() || title;
-    let slug = slugify(rawSlug, { lower: true, strict: true });
-    
-    // چک تکراری بودن slug
-    let slugExists = await Product.findOne({ slug });
-    if (slugExists) {
-      slug = `${slug}-${randomUUID().slice(0, 8)}`;
-    }
-
-    // ساخت محصول
-    const product = await Product.create({
-      title,
-      slug,
-      sku: formData.get("sku") || undefined,
-      price,
-      discountedPrice: formData.get("discountedPrice")
-        ? Number(formData.get("discountedPrice"))
-        : null,
-      discountPercent: formData.get("discountPercent")
-        ? Number(formData.get("discountPercent"))
-        : null,
-      category,
-      brand: brandId || null,
-      stock: Number(formData.get("stock") || 0),
-      shortDescription: formData.get("shortDescription") || "",
-      longDescription: formData.get("longDescription") || "",
-      thumbnail,
-      gallery,
-      badges: formData.get("badges") ? JSON.parse(formData.get("badges")) : [],
-      variants: formData.get("variants") ? JSON.parse(formData.get("variants")) : [],
-      attributes: formData.get("attributes") ? JSON.parse(formData.get("attributes")) : {},
-      tags: formData.get("tags") ? JSON.parse(formData.get("tags")) : [],
-      seo: {
-        title: formData.get("seoTitle") || `${title} | خرید آنلاین`,
-        description: formData.get("seoDescription") || formData.get("shortDescription"),
-      },
-    });
-
-    return NextResponse.json(
-      { success: true, message: "محصول با موفقیت ایجاد شد", product },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("Product create error:", error);
-    return NextResponse.json(
-      { error: error.message || "خطای سرور" },
-      { status: 500 }
-    );
-  }
+function toSlug(input = "") {
+  return String(input)
+    .trim()
+    .toLowerCase()
+    .replace(/[^\u0600-\u06FFa-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
-// ===================== GET - لیست محصولات (عمومی + فیلتر پیشرفته) =====================
-// app/api/products/route.js;
+function normalizeSpecs(specs) {
+  if (!Array.isArray(specs)) return [];
+  return specs
+    .map((item) => ({
+      label: String(item?.label ?? "").trim(),
+      value: String(item?.value ?? "").trim(),
+    }))
+    .filter((item) => item.label && item.value);
+}
 
+function normalizeImages(images) {
+  if (!Array.isArray(images)) return [];
+  return images.map((url) => String(url ?? "").trim()).filter(Boolean);
+}
 
+async function requireAdmin() {
+  await connectToDB();
+  const user = await authUser();
 
-export async function GET(request) {
+  if (!user) {
+    return { error: NextResponse.json({ message: "ابتدا وارد حساب شوید." }, { status: 401 }) };
+  }
+
+  if (user.role !== "ADMIN") {
+    return { error: NextResponse.json({ message: "دسترسی غیرمجاز." }, { status: 403 }) };
+  }
+
+  return { user };
+}
+
+/* -------------------------------- GET ------------------------------- */
+/**
+ * GET /api/admin/products
+ * Query:
+ * page, limit, q, category, isActive
+ */
+export async function GET(req) {
   try {
-    await connectToDB();
-    const { searchParams } = new URL(request.url);
+    const auth = await requireAdmin();
+    if (auth.error) return auth.error;
 
-    const page = Math.max(1, Number(searchParams.get("page") || 1));
-    const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit") || 20)));
+    const { searchParams } = new URL(req.url);
 
-    const filter = { publishStatus: "published" };
+    const page = Math.max(parseInt(searchParams.get("page") || "1", 10), 1);
+    const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "20", 10), 1), 100);
+    const q = String(searchParams.get("q") || "").trim();
+    const category = String(searchParams.get("category") || "").trim();
+    const isActiveParam = String(searchParams.get("isActive") || "").trim();
 
-    /* =========================
-       دسته‌بندی (slug)
-    ========================= */
-    const categorySlug = searchParams.get("category");
-    if (categorySlug) {
-      const category = await Category.findOne({ slug: categorySlug }).lean();
-      if (!category) {
-        return NextResponse.json({
-          success: true,
-          products: [],
-          pagination: { total: 0, pages: 0, page, limit },
-        });
-      }
-      filter.category = category._id;
+    const filter = {};
+
+    if (q) {
+      filter.$or = [
+        { title: { $regex: q, $options: "i" } },
+        { slug: { $regex: q, $options: "i" } },
+        { description: { $regex: q, $options: "i" } },
+        { casNumber: { $regex: q, $options: "i" } },
+        { hsCode: { $regex: q, $options: "i" } },
+      ];
     }
 
-    /* =========================
-       برند (ObjectId یا slug) — امن
-    ========================= */
-    const brandValue = searchParams.get("brand");
-    if (brandValue) {
-      const brandQuery = mongoose.Types.ObjectId.isValid(brandValue)
-        ? { _id: brandValue }
-        : { slug: brandValue };
-
-      const brand = await Brand.findOne(brandQuery).lean();
-      if (brand) {
-        filter.brand = brand._id;
+    if (category) {
+      if (!isValidObjectId(category)) {
+        return NextResponse.json({ message: "شناسه دسته‌بندی نامعتبر است." }, { status: 400 });
       }
+      filter.category = category;
     }
 
-    /* =========================
-       مرتب‌سازی (فعلاً فقط جدیدترین)
-    ========================= */
-    const sort = { createdAt: -1 };
+    if (isActiveParam === "true") filter.isActive = true;
+    if (isActiveParam === "false") filter.isActive = false;
 
-    /* =========================
-       کوئری اصلی
-    ========================= */
-    const [products, total] = await Promise.all([
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
       Product.find(filter)
         .populate("category", "title slug")
-        .populate("brand", "name slug logo")
-        .select("title slug price thumbnail badges status")
-        .sort(sort)
-        .skip((page - 1) * limit)
+        .sort({ createdAt: -1 })
+        .skip(skip)
         .limit(limit)
         .lean(),
-
       Product.countDocuments(filter),
     ]);
 
     return NextResponse.json({
-      success: true,
-      products,
+      items,
       pagination: {
-        total,
-        pages: Math.ceil(total / limit),
         page,
         limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
     });
   } catch (error) {
+    console.error("GET /api/admin/products error:", error);
+    return NextResponse.json({ message: "خطا در دریافت محصولات." }, { status: 500 });
+  }
+}
 
-  console.error("Products fetch error:", error);
-  return NextResponse.json(
-    { success: false, error: error.message, stack: error.stack },
-    { status: 500 }
-  );
+/* -------------------------------- POST ------------------------------ */
+/**
+ * POST /api/admin/products
+ * body:
+ * {
+ *   title: string,
+ *   slug?: string,
+ *   category: ObjectId,
+ *   description?: string,
+ *   images?: string[],
+ *   casNumber?: string,
+ *   hsCode?: string,
+ *   isActive?: boolean,
+ *   specs?: [{ label, value }]
+ * }
+ */
+export async function POST(req) {
+  try {
+    const auth = await requireAdmin();
+    if (auth.error) return auth.error;
 
+    const body = await req.json();
 
+    const title = String(body?.title ?? "").trim();
+    const category = String(body?.category ?? "").trim();
 
+    let slug = String(body?.slug ?? "").trim();
+    const description = String(body?.description ?? "").trim();
+    const images = normalizeImages(body?.images);
+    const casNumber = String(body?.casNumber ?? "").trim();
+    const hsCode = String(body?.hsCode ?? "").trim();
+    const isActive = typeof body?.isActive === "boolean" ? body.isActive : true;
+    const specs = normalizeSpecs(body?.specs);
 
+    if (!title) {
+      return NextResponse.json({ message: "عنوان محصول الزامی است." }, { status: 400 });
+    }
+
+    if (!category || !isValidObjectId(category)) {
+      return NextResponse.json({ message: "دسته‌بندی معتبر نیست." }, { status: 400 });
+    }
+
+    const categoryExists = await Category.exists({ _id: category });
+    if (!categoryExists) {
+      return NextResponse.json({ message: "دسته‌بندی پیدا نشد." }, { status: 404 });
+    }
+
+    slug = toSlug(slug || title);
+    if (!slug) {
+      return NextResponse.json({ message: "اسلاگ معتبر تولید نشد." }, { status: 400 });
+    }
+
+    const duplicateSlug = await Product.exists({ slug });
+    if (duplicateSlug) {
+      return NextResponse.json({ message: "این اسلاگ قبلاً ثبت شده است." }, { status: 409 });
+    }
+
+    const created = await Product.create({
+      title,
+      slug,
+      category,
+      description,
+      images,
+      casNumber: casNumber || undefined,
+      hsCode: hsCode || undefined,
+      isActive,
+      specs,
+    });
+
+    const product = await Product.findById(created._id)
+      .populate("category", "title slug")
+      .lean();
+
+    return NextResponse.json(
+      {
+        message: "محصول با موفقیت ایجاد شد.",
+        product,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("POST /api/admin/products error:", error);
+
+    if (error?.code === 11000) {
+      return NextResponse.json({ message: "اسلاگ تکراری است." }, { status: 409 });
+    }
+
+    return NextResponse.json({ message: "خطا در ایجاد محصول." }, { status: 500 });
   }
 }

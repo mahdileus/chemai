@@ -1,72 +1,92 @@
 "use client";
 
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/autoplay";
-import { Autoplay } from "swiper/modules";
+import { useEffect, useRef, useState } from "react";
 import ProductCard from "../../module/products/ProductCard";
 import Link from "next/link";
-import { HiOutlineArrowLongLeft } from "react-icons/hi2"
-import { IoPawSharp } from "react-icons/io5";
+import { HiOutlineArrowLongLeft } from "react-icons/hi2";
+import { CiBeaker1 } from "react-icons/ci";
+import AdvancedSearch from "../shop/AdvancedSearch";
+export default function LatestProduct() {
 
-export default function LatestProduct({ products }) {
+  // 🔹 فعلا استاتیک — بعداً API می‌خونی
+  const allProducts = Array.from({ length: 30 }, (_, i) => ({ id: i + 1 }));
 
-    return (
+  const [visibleCount, setVisibleCount] = useState(6);
+  const loaderRef = useRef(null);
 
-        <div className="relative container mt-10">
-            <div className="container flex items-center mb-4 gap-5" style={{ padding: 0 }}>
-                <span className="hidden md:block border border-green-200 rounded-full p-1.5 bg-green-100">
-                    <IoPawSharp size={32} className="text-green-500 " />
-
-                </span>
-                {/* این کانتینر در وسط صفحه و همه چی داخلشه */}
-                <div className="container mx-auto flex items-center justify-between z-10 py-4" style={{ padding: 0 }}>
-                    <span className=" text-secondery text-xl md:text-2xl font-bold">
-                        محصولات پت شاپ
-                    </span>
-
-                    <Link
-                        href="/products"
-                        className="flex group justify-start items-center py-2 px-2 transition-all  rounded-full gap-6 w-41  mt-4"
-                    >
-                        <p className="font-yekan-bakh text-base font-semibold text-secondery group-hover:text-green-600"> مشاهده همه</p>
-                        <span className="w-10 h-8 relative bg-green-500 group-hover:rounded-full group-hover:bg-green-600 rounded-l-full">
-                            <HiOutlineArrowLongLeft
-                                size={40}
-                                className="absolute text-white group-hover:-translate-x-2  transition-all -top-1 bottom-0 -right-4 left-0 z-50"
-                            />
-                        </span>
-                    </Link>
-                </div>
-
-
-            </div>
-            <Swiper
-                autoplay={{
-                    delay: 3000,
-                    disableOnInteraction: true,
-                }}
-                modules={[Autoplay]}
-                spaceBetween={16}
-                slidesPerView={1.2}
-                breakpoints={{
-                    640: { slidesPerView: 1 },
-                    768: { slidesPerView: 1.5 },
-                    1024: { slidesPerView: 2.5 },
-                    1280: { slidesPerView: 4.5 },
-                }}
-            >
-                {products
-                    .filter(product => product)
-                    .map((product) => (
-                        <SwiperSlide key={product._id}>
-                            < ProductCard
-                                product={product}
-                            />
-                        </SwiperSlide>
-                    ))
-                }
-            </Swiper>
-        </div>
+  // 🔹 اینفینیتی اسکرول
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + 6, allProducts.length));
+        }
+      },
+      { threshold: 1 }
     );
+
+    if (loaderRef.current) observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const visibleProducts = allProducts.slice(0, visibleCount);
+
+  return (
+    <div className="container mt-20">
+
+      {/* ===== هدر سکشن ===== */}
+      {/* ===== هدر سکشن ===== */}
+      <div className="mb-10 space-y-6">
+
+        {/* ردیف عنوان */}
+        <div className="flex items-center gap-4">
+          <div className="bg-blue-100 text-blue-600 p-2.5 shadow-xl"
+            style={{ clipPath: "polygon(25% 6.7%, 75% 6.7%, 100% 50%, 75% 93.3%, 25% 93.3%, 0% 50%)" }}>
+            <CiBeaker1 size={32} />
+          </div>
+
+          <h2 className="text-black/85 text-xl md:text-2xl font-bold">
+            آخرین محصولات
+          </h2>
+        </div>
+
+        {/* ردیف کنترل‌ها */}
+        <div className="flex flex-col xl:flex-row gap-4 xl:items-center xl:justify-between">
+
+          {/* ===== سرچ باکس — استاتیک ===== */}
+          <div className="relative w-full xl:max-w-md">
+            <input
+              type="text"
+              placeholder="جستجوی محصول..."
+              className="w-full pr-4 pl-4 py-3 rounded-2xl border border-gray-200 
+                   focus:border-primary focus:ring-2 focus:ring-primary/20 
+                   outline-none transition"
+            />
+          </div>
+
+          {/* ===== فیلتر + سورت + مشاهده همه ===== */}
+          <div className="flex flex-wrap gap-3">
+
+            {/* مرتب‌سازی */}
+            <AdvancedSearch/>
+          </div>
+        </div>
+      </div>
+
+
+      {/* ===== لیست محصولات ===== */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {visibleProducts.map((p) => (
+          <ProductCard key={p.id} />
+        ))}
+      </div>
+
+      {/* ===== لودر اینفینیتی ===== */}
+      {visibleCount < allProducts.length && (
+        <div ref={loaderRef} className="text-center py-10 text-gray-400">
+          در حال بارگذاری محصولات بیشتر...
+        </div>
+      )}
+    </div>
+  );
 }

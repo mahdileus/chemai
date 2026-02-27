@@ -1,25 +1,32 @@
-// configs/db.js
 import mongoose from "mongoose";
 
-let isConnected = false;
+const MONGO_URL = process.env.MONGO_URL;
 
-const connectToDB = async () => {
-  if (isConnected) {
-    return;
+if (!MONGO_URL) {
+  throw new Error("❌ Please define MONGO_URL in your environment variables");
+}
+
+// cache روی globalThis برای جلوگیری از اتصال تکراری در dev/hot-reload
+let cached = globalThis.mongoose;
+
+if (!cached) {
+  cached = globalThis.mongoose = { conn: null, promise: null };
+}
+
+export default async function connectToDB() {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose
+      .connect(MONGO_URL, {
+        // این‌ها در mongoose جدید معمولاً لازم نیست، ولی بودنش مشکلی نداره
+        // useNewUrlParser: true,
+        // useUnifiedTopology: true,
+      })
+      .then((mongooseInstance) => mongooseInstance);
   }
 
-  try {
-    const db = await mongoose.connect(process.env.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
-    isConnected = db.connections[0].readyState === 1;
-    console.log("✅ Connected to MongoDB");
-  } catch (error) {
-    console.error("❌ MongoDB Connection Error:", error);
-    throw new Error("Database connection failed");
-  }
-};
-
-export default connectToDB;
+  cached.conn = await cached.promise;
+  console.log("✅ Connected to MongoDB");
+  return cached.conn;
+}

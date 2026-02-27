@@ -1,184 +1,179 @@
-// components/product/ProductHeader.jsx
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
+import { LiaOpencart } from "react-icons/lia";
+
 import { CiShoppingCart, CiHeart, CiStar } from "react-icons/ci";
 import ProductGallery from "./ProductSlider";
 
-export default function ProductHeader({ product }) {
-  const [selectedVariant, setSelectedVariant] = useState(
-    product.variants?.find(v => v.isDefault) || product.variants?.[0] || null
-  );
-  const [quantity, setQuantity] = useState(1);
+export default function ProductHeader() {
 
-  // قیمت نهایی با توجه به واریانت
-  const basePrice = selectedVariant?.price || product.price;
-  const finalPrice = product.discountedPrice ||
-    (product.discountPercent > 0
-      ? Math.round(basePrice * (1 - product.discountPercent / 100))
-      : basePrice
-    );
-  const totalStock = product.stock + (selectedVariant?.stock || 0);
-
-  const hasDiscount = product.discountPercent > 0 || product.discountedPrice;
+  const images = [
+    "/images/p1.jpg",
+    "/images/p2.jpg",
+    "/images/p3.jpg",
+  ];
 
   return (
     <div className="bg-white rounded-3xl shadow-2xl overflow-hidden mt-8">
       <div className="flex flex-col lg:flex-row gap-10 p-5 lg:p-10">
 
-
-
         {/* محتوا – سمت چپ */}
         <div className="w-full order-2 lg:order-2 flex flex-col gap-7">
 
           {/* عنوان + قلب */}
-          <div className="flex items-start justify-between gap-4">
-            <h1 className="text-2xl font-bold text-secondery leading-snug">
-              {product.title}
-            </h1>
-            <button className="text-red-500 hover:text-red-600 mt-1">
-              <CiHeart size={30} />
-            </button>
-          </div>
+          <div className="flex flex-col lg:flex-row gap-6 justify-between">
 
-          {/* بج‌ها */}
-          {product.badges?.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {product.badges.map((badge, i) => (
-                <span
-                  key={i}
-                  className={`px-4 py-2 rounded-full text-xs font-bold text-white ${badge === "new" ? "bg-blue-600"
-                    : badge === "bestseller" ? "bg-orange-600"
-                      : badge === "special_offer" ? "bg-purple-600"
-                        : badge === "limited" ? "bg-red-600"
-                          : "bg-green-600"
-                    }`}
-                >
-                  {badge === "new" ? "جدید"
-                    : badge === "bestseller" ? "پرفروش"
-                      : badge === "special_offer" ? "پیشنهاد ویژه"
-                        : badge === "limited" ? "محدود"
-                          : "داغ"}
-                </span>
-              ))}
-            </div>
-          )}
+            {/* ===== سمت راست — عنوان + بج‌ها + امتیاز ===== */}
+            <div className="flex-1 flex flex-col gap-4">
 
-          {/* امتیاز */}
-          <div className="flex items-center gap-3">
-            <div className="flex">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <CiStar
-                  key={i}
-                  size={22}
-                  className={i < Math.floor(product.rating?.average || 0)
-                    ? "text-yellow-500 fill-yellow-500"
-                    : "text-gray-300"}
-                />
-              ))}
-            </div>
-            <span className="text-gray-500 text-sm">
-              ({product.rating?.count || 0} نظر)
-            </span>
-          </div>
+              {/* عنوان */}
+              <h1 className="text-2xl font-bold text-black/85 leading-snug">
+                استون پروتئین حیوانی
+              </h1>
 
-          {/* واریانت‌ها */}
-          {product.isVariable && product.variants?.length > 0 && (
-            <div>
-              <h3 className="font-bold text-lg mb-3">انتخاب گزینه</h3>
+              {/* بج‌ها */}
               <div className="flex flex-wrap gap-2">
-                {product.variants.map((variant, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSelectedVariant(variant)}
-                    className={`px-5 py-2 rounded-xl border-2 text-sm font-medium transition
-                  ${selectedVariant?.name === variant.name
-                        ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                        : "border-gray-300 hover:border-indigo-400"
-                      }`}
-                  >
-                    {variant.name}
-                  </button>
-                ))}
+                <span className="px-4 py-2 rounded-full text-xs font-bold text-white bg-blue-600">
+                  جدید
+                </span>
+                <span className="px-4 py-2 rounded-full text-xs font-bold text-white bg-orange-600">
+                  پرفروش
+                </span>
+                <span className="px-4 py-2 rounded-full text-xs font-bold text-white bg-purple-600">
+                  پیشنهاد ویژه
+                </span>
               </div>
+
+              {/* امتیاز */}
+              <div className="flex items-center gap-3">
+                <div className="flex">
+                  {[0, 1, 2, 3, 4].map(i => (
+                    <CiStar key={i} size={22} className="text-yellow-500 fill-yellow-500" />
+                  ))}
+                </div>
+                <span className="text-gray-500 text-sm">
+                  (128 نظر)
+                </span>
+              </div>
+
             </div>
-          )}
 
-          {/* قیمت */}
-          <div className="bg-green-50 border border-green-500 rounded-2xl p-5">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                {hasDiscount && (
-                  <span className="line-through text-gray-400 text-lg">
-                    {basePrice.toLocaleString()} تومان
-                  </span>
-                )}
-                <div className="text-3xl lg:text-4xl font-bold text-primary mt-2">
-                  {finalPrice.toLocaleString()} تومان
-                </div>
+            {/* ===== سمت چپ — یادداشت فروشنده ===== */}
+            <div className="lg:w-[250px] shrink-0">
+
+              <div className="
+      border border-orange-300
+      bg-orange-50
+      text-orange-800
+      rounded-2xl
+      px-4 py-3
+      text-sm
+      leading-6
+      shadow-sm
+    ">
+                <span className="font-bold">یادداشت فروشنده:</span>
+                <p className="mt-1 text-justify">
+                  ارسال فقط برای خریداران دارای مجوز آزمایشگاهی انجام می‌شود.ارسال فقط برای خریداران دارای مجوز آزمایشگاهی انجام می‌شود.ارسال فقط برای خریداران دارای مجوز آزمایشگاهی انجام می‌شود.ارسال فقط برای خریداران دارای مجوز آزمایشگاهی انجام می‌شود.
+                </p>
               </div>
 
-              {hasDiscount && (
-                <div className="bg-green-500 text-white px-4 py-2 rounded-full font-bold text-sm">
-                  {product.discountPercent || Math.round((1 - finalPrice / basePrice) * 100)}٪ تخفیف
-                </div>
-              )}
+            </div>
+
+          </div>
+
+
+          {/* واریانت — استاتیک */}
+          <div>
+            <h3 className="font-bold text-lg mb-3">انتخاب گزینه</h3>
+            <div className="flex flex-wrap gap-2">
+              <button className="px-5 py-2 rounded-xl border-2 border-indigo-600 bg-indigo-50 text-indigo-700 text-sm font-medium">
+                بسته کوچک
+              </button>
+              <button className="px-5 py-2 rounded-xl border-2 border-gray-300 text-sm font-medium">
+                بسته متوسط
+              </button>
+              <button className="px-5 py-2 rounded-xl border-2 border-gray-300 text-sm font-medium">
+                بسته بزرگ
+              </button>
             </div>
           </div>
 
-          {/* موجودی */}
-          <div className="flex gap-2 text-sm">
-            <span className="font-medium">موجودی:</span>
-            <span className={totalStock > 0 ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
-              {totalStock > 0 ? `${totalStock} عدد موجود` : "ناموجود"}
-            </span>
+          {/* قیمت — استاتیک */}
+          {/* 6 باکس ویژگی کلیدی */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+
+              <div className="rounded-xl border border-gray-200 p-4 text-center bg-gray-50">
+                <div className="text-xs text-gray-500 mb-1">تاریخ انقضا</div>
+                <div className="font-bold text-gray-800">2029-12-1</div>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 p-4 text-center bg-gray-50">
+                <div className="text-xs text-gray-500 mb-1">تاریخ تولید</div>
+                <div className="font-bold text-gray-800">2026-12-1</div>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 p-4 text-center bg-gray-50">
+                <div className="text-xs text-gray-500 mb-1">دسته‌بندی</div>
+                <div className="font-bold text-gray-800">مواد اولیه</div>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 p-4 text-center bg-gray-50">
+                <div className="text-xs text-gray-500 mb-1">کشور سازنده</div>
+                <div className="font-bold text-gray-800">آلمان</div>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 p-4 text-center bg-gray-50">
+                <div className="text-xs text-gray-500 mb-1">برند</div>
+                <div className="font-bold text-gray-800">آلمان</div>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 p-4 text-center bg-gray-50">
+                <div className="text-xs text-gray-500 mb-1">کد محصول</div>
+                <div className="font-bold text-gray-800">ch-112</div>
+              </div>
+
+            </div>
           </div>
 
-          {/* تعداد + افزودن به سبد */}
+
+
+          {/* موجودی — استاتیک */}
+
+
+          {/* تعداد — استاتیک */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex items-center border-2 border-green-500 rounded-xl w-fit">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-4 py-3 text-lg"
-              >
-                −
-              </button>
-              <span className="px-6 font-bold text-lg">{quantity}</span>
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="px-4 py-3 text-lg"
-              >
-                +
-              </button>
-            </div>
-
-            <button className="flex-1 rounded-3xl px-5 bg-primary border-b-[#2C00A7] border-b-8 hover:opacity-90 hover:shadow-md cursor-pointer transition-all duration-300 font-bold text-lg text-white flex items-center justify-center gap-3">
-              <CiShoppingCart size={28} />
-              افزودن به سبد خرید
+            <button
+              className={`relative mt-3 overflow-hidden inline-block px-6 py-2.5 bg-linear-to-br from-primary to-blue-600 text-white
+                        rounded-3xl text-base transition font-semibold  before:absolute before:inset-0 before:-translate-x-full before:bg-linear-to-r before:from-transparent before:via-white/40                      before:to-transparent before:skew-x-[-25deg] before:transition-transform                before:duration-700 hover:before:translate-x-full`}
+            >
+              درخواست خرید<LiaOpencart className="inline-block ml-1" />
             </button>
           </div>
 
-          {/* توضیح کوتاه */}
+          {/* توضیح کوتاه — استاتیک */}
           <div className="pt-5 border-t">
             <h3 className="font-bold text-lg mb-2">توضیح کوتاه</h3>
-            <div
-              className="text-gray-600 leading-7 text-sm lg:text-base"
-              dangerouslySetInnerHTML={{ __html: product.shortDescription }}
-            />
+            <p className="text-gray-600 leading-7 text-sm lg:text-base">
+              یک مکمل کامل و باکیفیت برای افزایش انرژی و سلامت حیوانات خانگی.
+              مناسب برای مصرف روزانه و دارای تاییدیه آزمایشگاهی.
+            </p>
           </div>
+
         </div>
-        {/* گالری – سمت راست */}
-        <div className="w-full order-1 border-green-500 lg:order-1 flex justify-center">
+
+        {/* گالری – سمت راست — استاتیک */}
+        <div className="w-full order-1 lg:order-1 flex justify-center">
           <div className="w-full max-w-[520px]">
             <ProductGallery
-              images={[product.thumbnail, ...(product.gallery || [])]}
-              title={product.title}
+              images={images}
+              title="استون پروتئین حیوانی"
             />
           </div>
         </div>
+
       </div>
     </div>
-
   );
 }

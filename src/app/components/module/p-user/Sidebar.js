@@ -1,6 +1,6 @@
 "use client"
-import { CiDiscount1, CiShoppingBasket, CiMap, CiHeart, CiHeadphones, CiChat2, CiUser, CiLogout } from "react-icons/ci";
-import Image from "next/image";
+import { CiShoppingBasket, CiHeadphones, CiUser, CiLogout, CiCreditCard1 } from "react-icons/ci";
+
 import SidebarItem from "./SidebarItem";
 import Link from "next/link";
 import swal from "sweetalert";
@@ -34,26 +34,27 @@ export default function Sidebar() {
     });
   };
   return (
-    <aside className="w-20 md:w-64 bg-white p-4 flex flex-col items-center gap-4 border-l  border-secondery">
-      <Link href="/" >
-        <Image src={"/images/dog-face-svgrepo-com 1.png"} width={40} height={40} alt="logo" />
-
+    <aside className="w-20 md:w-64 bg-white p-4 flex flex-col items-center gap-4 border-l  border-gray-200">
+      <Link href="/" className="hidden md:block" >
+        <div>
+          <img src="/images/chemai-multi.png" width={110} />
+        </div>
       </Link>
 
       <nav className="flex flex-col justify-between rounded-t-full h-full w-full text-sm mt-12 text-cream">
         <div className="flex flex-col gap-4">
-          <SidebarItem icon={<CiUser className="w-8 h-8" />} label="حساب کاربری" href="/p-user/dashboard" />
-          <SidebarItem icon={<CiShoppingBasket className="w-8 h-8" />} label="سفارش های من" href="/p-user/courses" />
-          <SidebarItem icon={<CiMap className="w-8 h-8" />} label="آدرس های من" href="/p-user/courses" />
-          <SidebarItem icon={<CiHeart className="w-8 h-8" />} label="علاقه‌مندی‌ها" href="/p-user/wishlist" />
-          <SidebarItem icon={<CiHeadphones className="w-8 h-8" />} label="پشتیبانی" href="/p-user/tickets" />
-          <SidebarItem icon={<CiChat2 className="w-8 h-8" />} label="نظرات من" href="/p-user/comments" />
+          <SidebarItem icon={<CiUser className="w-6 h-6" />} label="داشبورد " href="/p-user/dashboard" />
+          <SidebarItem icon={<CiShoppingBasket className="w-6 h-6" />} label=" محصولات من " href="/p-user/listings" />
+          <SidebarItem icon={<CiShoppingBasket className="w-6 h-6" />} label=" کارتابل خرید " href="/p-user/shopping-cart" />
+          <SidebarItem icon={<CiShoppingBasket className="w-6 h-6" />} label="کارتابل فروش" href="/p-user/sales-cart" />
+          <SidebarItem icon={<CiCreditCard1 className="w-6 h-6" />} label="امور مالی" href="/p-user/financial-affairs" />
+
+          <SidebarItem icon={<CiHeadphones className="w-6 h-6" />} label="پشتیبانی" href="/p-user/tickets" />
         </div>
         <div className="flex flex-col gap-4">
-          <SidebarItem icon={<CiDiscount1 className="w-8 h-8" />} label="تخفیف های من" href="/p-user/discountes" />
           <div onClick={logoutHandler}>
             <SidebarItem
-              icon={<CiLogout className="w-8 h-8" />}
+              icon={<CiLogout className="w-6 h-6" />}
               label="خروج"
               onClick={logoutHandler}
             />

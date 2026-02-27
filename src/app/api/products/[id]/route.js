@@ -1,199 +1,255 @@
-// src/app/api/admin/products/[id]/route.js   (یا اگه عمومیه: /api/products/[id]/route.js)
-
 import { NextResponse } from "next/server";
-import connectToDB from "@/configs/db";
-import Product from "@/models/Product";
-import Category from "@/models/ProductCategory";
-import Brand from "@/models/Brand";
-import { authAdmin } from "@/utils/auth-server";
-import { writeFile, unlink } from "fs/promises";
-import path from "path";
-import { randomUUID } from "crypto";
-import slugify from "slugify";
 import mongoose from "mongoose";
+import connectToDB from "@/configs/db";
+import { authUser } from "@/utils/auth-server";
+import Product from "@/models/Product";
+import Category from "@/models/Category";
+import ProductVariant from "@/models/ProductVariant";
+import Listing from "@/models/Listing";
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+export const runtime = "nodejs";
 
-// تابع آپلود امن
-async function uploadFile(file) {
-  if (!file || file.size === 0) return null;
-  if (!ALLOWED_TYPES.includes(file.type)) throw new Error("نوع فایل مجاز نیست");
-  if (file.size > MAX_SIZE) throw new Error("حجم فایل بیش از حد مجاز است");
+/* ----------------------------- Helpers ----------------------------- */
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const ext = path.extname(file.name);
-  const filename = `${Date.now()}-${randomUUID()}${ext}`;
-  const filepath = path.join(UPLOAD_DIR, filename);
-
-  await writeFile(filepath, buffer);
-  return `/uploads/${filename}`;
+function isValidObjectId(id) {
+  return mongoose.Types.ObjectId.isValid(id);
 }
 
-// حذف فایل قدیمی (اختیاری)
-async function deleteOldFile(url) {
-  if (!url || url.startsWith("/images/default")) return;
-  const filePath = path.join(process.cwd(), "public", url);
+function toSlug(input = "") {
+  return String(input)
+    .trim()
+    .toLowerCase()
+    .replace(/[^\u0600-\u06FFa-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function normalizeSpecs(specs) {
+  if (!Array.isArray(specs)) return [];
+  return specs
+    .map((item) => ({
+      label: String(item?.label ?? "").trim(),
+      value: String(item?.value ?? "").trim(),
+    }))
+    .filter((item) => item.label && item.value);
+}
+
+function normalizeImages(images) {
+  if (!Array.isArray(images)) return [];
+  return images.map((url) => String(url ?? "").trim()).filter(Boolean);
+}
+
+async function requireAdmin() {
+  await connectToDB();
+  const user = await authUser();
+
+  if (!user) {
+    return { error: NextResponse.json({ message: "ابتدا وارد حساب شوید." }, { status: 401 }) };
+  }
+
+  if (user.role !== "ADMIN") {
+    return { error: NextResponse.json({ message: "دسترسی غیرمجاز." }, { status: 403 }) };
+  }
+
+  return { user };
+}
+
+/* -------------------------------- GET ------------------------------- */
+export async function GET(req, { params }) {
   try {
-    await unlink(filePath);
-  } catch (err) {
-    console.warn("Failed to delete old file:", url);
+    const auth = await requireAdmin();
+    if (auth.error) return auth.error;
+
+    const id = params.id;
+
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ message: "شناسه محصول نامعتبر است." }, { status: 400 });
+    }
+
+    const product = await Product.findById(id).populate("category", "title slug").lean();
+
+    if (!product) {
+      return NextResponse.json({ message: "محصول پیدا نشد." }, { status: 404 });
+    }
+
+    return NextResponse.json({ product });
+  } catch (error) {
+    console.error("GET /api/admin/products/[id] error:", error);
+    return NextResponse.json({ message: "خطا در دریافت محصول." }, { status: 500 });
   }
 }
 
-// ===================== PUT - ویرایش محصول =====================
-export async function PUT(request, { params }) {
+/* -------------------------------- PATCH ------------------------------ */
+export async function PATCH(req, { params }) {
   try {
-    await connectToDB();
-    const isAdmin = await authAdmin(request);
-    if (!isAdmin) return NextResponse.json({ error: "دسترسی ممنوع" }, { status: 403 });
+    const auth = await requireAdmin();
+    if (auth.error) return auth.error;
 
-    const { id } = params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ error: "شناسه نامعتبر" }, { status: 422 });
+    const id = params.id;
+
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ message: "شناسه محصول نامعتبر است." }, { status: 400 });
     }
 
     const product = await Product.findById(id);
-    if (!product) return NextResponse.json({ error: "محصول یافت نشد" }, { status: 404 });
+    if (!product) {
+      return NextResponse.json({ message: "محصول پیدا نشد." }, { status: 404 });
+    }
 
-    const formData = await request.formData();
+    const body = await req.json();
+    const update = {};
 
-    const title = formData.get("title")?.toString().trim();
-    if (title) product.title = title;
-
-    // slug
-    if (formData.get("slug")) {
-      let newSlug = slugify(formData.get("slug").toString(), { lower: true, strict: true });
-      const slugExists = await Product.findOne({ slug: newSlug, _id: { $ne: id } });
-      if (slugExists) {
-        newSlug = `${newSlug}-${randomUUID().slice(0, 6)}`;
+    if (body.title !== undefined) {
+      const title = String(body.title ?? "").trim();
+      if (!title) {
+        return NextResponse.json({ message: "عنوان محصول نمی‌تواند خالی باشد." }, { status: 400 });
       }
-      product.slug = newSlug;
+      update.title = title;
     }
 
-    // قیمت و تخفیف
-    if (formData.get("price")) product.price = Number(formData.get("price"));
-    if (formData.has("discountedPrice")) {
-      const dp = formData.get("discountedPrice");
-      product.discountedPrice = dp ? Number(dp) : null;
-    }
-    if (formData.has("discountPercent")) {
-      const dp = formData.get("discountPercent");
-      product.discountPercent = dp ? Number(dp) : null;
-    }
-
-    // روابط
-    if (formData.get("category")) {
-      const cat = await Category.findById(formData.get("category"));
-      if (!cat) return NextResponse.json({ error: "دسته‌بندی نامعتبر" }, { status: 422 });
-      product.category = formData.get("category");
-    }
-    if (formData.has("brand")) {
-      const brandId = formData.get("brand");
-      if (brandId && mongoose.Types.ObjectId.isValid(brandId)) {
-        const brand = await Brand.findById(brandId);
-        if (!brand) return NextResponse.json({ error: "برند نامعتبر" }, { status: 422 });
-        product.brand = brandId;
-      } else {
-        product.brand = null;
+    if (body.category !== undefined) {
+      const category = String(body.category ?? "").trim();
+      if (!isValidObjectId(category)) {
+        return NextResponse.json({ message: "شناسه دسته‌بندی نامعتبر است." }, { status: 400 });
       }
+
+      const categoryExists = await Category.exists({ _id: category });
+      if (!categoryExists) {
+        return NextResponse.json({ message: "دسته‌بندی پیدا نشد." }, { status: 404 });
+      }
+
+      update.category = category;
     }
 
-    // موجودی و وضعیت
-    if (formData.get("stock")) product.stock = Number(formData.get("stock"));
-
-    // توضیحات
-    if (formData.get("shortDescription")) product.shortDescription = formData.get("shortDescription");
-    if (formData.get("longDescription")) product.longDescription = formData.get("longDescription");
-
-    // آرایه‌ها و آبجکت‌ها
-    if (formData.get("badges")) product.badges = JSON.parse(formData.get("badges"));
-    if (formData.get("tags")) product.tags = JSON.parse(formData.get("tags"));
-    if (formData.get("variants")) product.variants = JSON.parse(formData.get("variants"));
-    if (formData.get("attributes")) product.attributes = JSON.parse(formData.get("attributes"));
-
-    // آپلود تصاویر
-    const thumbnailFile = formData.get("thumbnail");
-    if (thumbnailFile && thumbnailFile.size > 0) {
-      const newThumb = await uploadFile(thumbnailFile);
-      if (product.thumbnail) await deleteOldFile(product.thumbnail);
-      product.thumbnail = newThumb;
+    if (body.description !== undefined) {
+      update.description = String(body.description ?? "").trim();
     }
 
-    const galleryFiles = formData.getAll("gallery");
-    if (galleryFiles.length > 0 && galleryFiles[0].size > 0) {
-      const newGallery = await Promise.all(galleryFiles.map(uploadFile));
-      product.gallery = [...product.gallery, ...newGallery.filter(Boolean)];
+    if (body.images !== undefined) {
+      update.images = normalizeImages(body.images);
     }
 
-    await product.save();
-
-    return NextResponse.json({
-      success: true,
-      message: "محصول با موفقیت بروزرسانی شد",
-      product,
-    });
-  } catch (error) {
-    console.error("Product update error:", error);
-    return NextResponse.json({ error: error.message || "خطای سرور" }, { status: 500 });
-  }
-}
-
-// ===================== GET - دریافت تک محصول =====================
-export async function GET(request, { params }) {
-  try {
-    await connectToDB();
-
-    const { id } = params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ error: "شناسه نامعتبر" }, { status: 422 });
+    if (body.casNumber !== undefined) {
+      update.casNumber = String(body.casNumber ?? "").trim();
     }
 
-    const product = await Product.findById(id)
-      .populate("category", "title slug ancestors")
-      .populate("brand", "name slug logo")
-      .populate({
-        path: "comments",
-        select: "user rating comment createdAt",
-        populate: { path: "user", select: "name avatar" },
-        options: { limit: 20, sort: { createdAt: -1 } }
-      })
+    if (body.hsCode !== undefined) {
+      update.hsCode = String(body.hsCode ?? "").trim();
+    }
+
+    if (body.isActive !== undefined) {
+      if (typeof body.isActive !== "boolean") {
+        return NextResponse.json({ message: "فیلد isActive باید بولین باشد." }, { status: 400 });
+      }
+      update.isActive = body.isActive;
+    }
+
+    if (body.specs !== undefined) {
+      update.specs = normalizeSpecs(body.specs);
+    }
+
+    // slug (اگر slug یا title تغییر کرد)
+    if (body.slug !== undefined || body.title !== undefined) {
+      const rawSlug = body.slug !== undefined ? String(body.slug ?? "").trim() : "";
+      const sourceTitle = update.title ?? product.title;
+      const nextSlug = toSlug(rawSlug || sourceTitle);
+
+      if (!nextSlug) {
+        return NextResponse.json({ message: "اسلاگ معتبر نیست." }, { status: 400 });
+      }
+
+      const duplicateSlug = await Product.exists({
+        _id: { $ne: product._id },
+        slug: nextSlug,
+      });
+
+      if (duplicateSlug) {
+        return NextResponse.json({ message: "این اسلاگ قبلاً ثبت شده است." }, { status: 409 });
+      }
+
+      update.slug = nextSlug;
+    }
+
+    const updated = await Product.findByIdAndUpdate(product._id, update, {
+      new: true,
+      runValidators: true,
+    })
+      .populate("category", "title slug")
       .lean();
 
-    if (!product) {
-      return NextResponse.json({ error: "محصول یافت نشد" }, { status: 404 });
+    return NextResponse.json({
+      message: "محصول با موفقیت ویرایش شد.",
+      product: updated,
+    });
+  } catch (error) {
+    console.error("PATCH /api/admin/products/[id] error:", error);
+
+    if (error?.code === 11000) {
+      return NextResponse.json({ message: "اسلاگ تکراری است." }, { status: 409 });
     }
 
-    return NextResponse.json({ success: true, product });
-  } catch (error) {
-    return NextResponse.json({ error: "خطای سرور" }, { status: 500 });
+    return NextResponse.json({ message: "خطا در ویرایش محصول." }, { status: 500 });
   }
 }
 
-// ===================== DELETE - حذف محصول =====================
-export async function DELETE(request, { params }) {
+/* -------------------------------- DELETE ----------------------------- */
+/**
+ * پیش‌فرض: حذف نرم (isActive=false)
+ * حذف واقعی فقط با ?hard=true و اگر وابستگی نداشته باشد
+ */
+export async function DELETE(req, { params }) {
   try {
-    await connectToDB();
-    const isAdmin = await authAdmin(request);
-    if (!isAdmin) return NextResponse.json({ error: "دسترسی ممنوع" }, { status: 403 });
+    const auth = await requireAdmin();
+    if (auth.error) return auth.error;
 
-    const { id } = params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ error: "شناسه نامعتبر" }, { status: 422 });
+    const id = params.id;
+
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ message: "شناسه محصول نامعتبر است." }, { status: 400 });
     }
 
-    const product = await Product.findByIdAndDelete(id);
+    const { searchParams } = new URL(req.url);
+    const hardDelete = searchParams.get("hard") === "true";
+
+    const product = await Product.findById(id);
     if (!product) {
-      return NextResponse.json({ error: "محصول یافت نشد" }, { status: 404 });
+      return NextResponse.json({ message: "محصول پیدا نشد." }, { status: 404 });
     }
 
-    // حذف تصاویر (اختیاری)
-    if (product.thumbnail) await deleteOldFile(product.thumbnail);
-    for (const img of product.gallery) await deleteOldFile(img);
+    if (!hardDelete) {
+      product.isActive = false;
+      await product.save();
 
-    return NextResponse.json({ success: true, message: "محصول با موفقیت حذف شد" });
+      return NextResponse.json({
+        message: "محصول غیرفعال شد (حذف نرم).",
+        productId: String(product._id),
+      });
+    }
+
+    // حذف واقعی فقط اگر وابستگی نداشته باشد
+    const [variantCount, listingCount] = await Promise.all([
+      ProductVariant.countDocuments({ product: id }),
+      Listing.countDocuments({ product: id }),
+    ]);
+
+    if (variantCount > 0 || listingCount > 0) {
+      return NextResponse.json(
+        {
+          message: "این محصول وابسته به Variant/Listing است و حذف واقعی ممکن نیست.",
+          refs: { variantCount, listingCount },
+        },
+        { status: 409 }
+      );
+    }
+
+    await Product.deleteOne({ _id: id });
+
+    return NextResponse.json({
+      message: "محصول به‌صورت کامل حذف شد.",
+    });
   } catch (error) {
-    return NextResponse.json({ error: "خطای سرور" }, { status: 500 });
+    console.error("DELETE /api/admin/products/[id] error:", error);
+    return NextResponse.json({ message: "خطا در حذف محصول." }, { status: 500 });
   }
 }

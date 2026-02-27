@@ -1,45 +1,38 @@
 export const dynamic = "force-dynamic";
-// یا export const revalidate = 0
 
-import Footer from "@/app/components/module/footer/Footer";
-import Navbar from "@/app/components/module/navbar/Navbar";
-import ShapeTwo from "@/app/components/template/shape/Shape";
-import MainSlider from "../components/template/shop/MainSlider";
-import ShopCategories from "../components/template/shop/ShopCategories";
-import LatestProduct from "../components/template/main/LatestProducts";
+
+import Categories from "../components/template/main/Categories";
 import connectToDB from "@/configs/db";
-import ProductModel from "@/models/Product"
-import Banners from "../components/template/shop/Banners";
-import Brands from "../components/template/shop/Brands";
-import MiddleSlider from "../components/template/shop/MiddleSlider";
+import Footer from "../components/module/footer/Footer";
+import { authUser } from "@/utils/auth-server";
+import Herosection from "../components/template/shop/Herosection";
+import ShopNavbar from "../components/module/navbar/ShopNavbar";
+import LatestProduct from "../components/template/main/LatestProducts";
+import Special from "../components/template/shop/Special";
+import Shape from "../components/template/shape/Shape";
+;
 
-export default async function Product() {
-    await connectToDB();
-    const products = await ProductModel.find({})
-        .sort({ createdAt: -1 })
-        .limit(8);
+export default async function Home() {
+  await connectToDB();
+  const user = await authUser();
+  let userName = null;
 
-    const safeProducts = products || [];
+  if (user && user.name) {
+    userName = user.name;
+  }
 
-    return (
-        <div className="font-yekan-bakh relative overflow-hidden">
-            <ShapeTwo />
-            <Navbar />
-            <MainSlider />
-            <ShopCategories />
 
-            <LatestProduct products={JSON.parse(JSON.stringify(safeProducts))} />
-
-            <MiddleSlider />
-
-            <LatestProduct products={JSON.parse(JSON.stringify(safeProducts))} />
-
-            <Banners />
-
-            <LatestProduct products={JSON.parse(JSON.stringify(safeProducts))} />
-
-            <Brands />
-            <Footer />
-        </div>
-    )
+  return (
+    <div className="font-yekan-bakh relative overflow-x-hidden">
+      <Shape/>
+      <ShopNavbar isLogin={!!user}
+        userName={userName}
+      />
+      <Herosection />
+      <Categories />
+      <Special/>
+      <LatestProduct />
+      <Footer />
+    </div>
+  );
 }
