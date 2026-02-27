@@ -23,7 +23,7 @@ export default function MobileHeader({ isLogin }) {
     };
 
     return (
-        <div className="relative container">
+        <div className="relative">
             {/* Overlay blur background */}
             {isMobileMenuOpen && (
                 <div
