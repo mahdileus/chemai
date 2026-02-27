@@ -96,7 +96,7 @@ export default function HeroToNext() {
             className="w-full flex justify-center sticky top-40 z-20"
           >
             <img
-              src="/images/market-1.png"
+              src="/images/Market-1.png"
               className="w-full hidden md:block max-w-3xl h-auto select-none pointer-events-none"
             />
           </motion.div>
