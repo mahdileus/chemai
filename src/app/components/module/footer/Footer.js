@@ -18,14 +18,13 @@ export default function Footer() {
         {/* ستون اول - آکادمی */}
         <div className="space-y-4 text-center md:text-right">
           <h4 className="font-bold text-xl font-kalameh text-primary">کمای</h4>
-          <p className="text-md leading-relaxed text-center text-gray-700 md:text-right">
-            چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می‌باشد.
-          </p>
+          <p className="text-md leading-relaxed text-justify text-gray-700 md:text-right">
+            کمای اولین و بزرگترین بازارگاه مواد اولیه و جانبی در زنجیره تامین مواد شیمیایی ایران کمای یک پلتفرم B2B با تعامل محتوایی در جهت رفع دغدغه‌ها مشکلات فروش برای تامین کنندگان تولیدکنندگان و رفع دغدغه خریداران با تسهیل در روند خرید و فروش مواد اولیه شیمیایی می‌باشد          </p>
         </div>
 
         {/* ستون دوم - دوره ها */}
         <div className="space-y-2 text-center md:text-right lg:pr-20">
-          <h4 className="font-bold text-xl font-kalameh text-primary"> آخرین مقالات</h4>
+          <h4 className="font-bold text-xl font-kalameh text-primary"> آخرین اخبار</h4>
           <ul className="space-y-2 text-md text-center md:text-right flex flex-col">
             <Link href={"#"} className="inline-block"> تاثیر نفت بر بازار </Link>
             <Link href={"#"} className="inline-block"> تاثیر نفت بر بازار</Link>
@@ -39,9 +38,9 @@ export default function Footer() {
           <h4 className="font-bold text-xl font-kalameh text-primary">دسترسی سریع</h4>
           <ul className="space-y-2 text-md text-center md:text-right flex flex-col">
             <Link href={"/"} className="inline-block">صفحه نخست</Link>
-            <Link href={"#"} className="inline-block">پنل کاربری</Link>
-            <Link href={"#"} className="inline-block">مقالات</Link>
-            <Link href={"#"} className="inline-block">درباره ما</Link>
+            <Link href={"/p-user"} className="inline-block">پنل کاربری</Link>
+            <Link href={"/news"} className="inline-block">اخبار</Link>
+            <Link href={"/shop"} className="inline-block">بازارگاه</Link>
           </ul>
         </div>
 
@@ -58,15 +57,15 @@ export default function Footer() {
             <p className="text-base"><PiClock className="inline ml-2 text-xl mt-4" /> ساعت کاری از ساعت 8 صبح تا 10 شب </p>
           </div>
           <div className="flex gap-4 mt-5 text-xl justify-center md:justify-start text-[#112D4E]">
-            <Link href="https://instagram.com/firouzeh.javaherian" target="_blank">
+            <Link href="#" target="_blank">
               <PiInstagramLogo className="hover:text-[#3F72AF] cursor-pointer" />
             </Link>
 
-            <Link href="https://t.me/Poshtibani_javaherian" target="_blank">
+            <Link href="#" target="_blank">
               <PiTelegramLogo className="hover:text-[#3F72AF] cursor-pointer" />
             </Link>
 
-            <Link href="https://www.youtube.com/@FirouzehJavaherian-gn3" target="_blank">
+            <Link href="#" target="_blank">
               <PiYoutubeLogo className="hover:text-[#3F72AF] cursor-pointer" />
             </Link>
           </div>

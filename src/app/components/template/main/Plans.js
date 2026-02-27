@@ -6,7 +6,7 @@ export default function Plans() {
     return (
         <div className="min-h-screen container my-12">
             <h2 className="text-4xl font-bold text-primary text-center">
-                پلن های <strong className="text-orange-500">کمای</strong>
+                پلن های <strong className="text-orange-500">کِمای</strong>
             </h2>
             <p className="text-center text-gray-700 mb-8 mt-3 ">تمام فرایند خرید مواد شیمیایی، از استعلام قیمت تا تحویل، در یک پلتفرم امن و شفاف</p>
             <div className="">

@@ -54,7 +54,7 @@ export default function CommentBox() {
   return (
     <section className="w-full py-20 overflow-hidden bg-linear-to-br from-primary to-blue-600 my-20">
       <h2 className="text-4xl font-bold text-white text-center">
-        نظرات کاربران درباره  <strong>کمای </strong>
+        نظرات کاربران درباره  <strong>کِمای </strong>
       </h2>
       <p className="text-center text-gray-100 mb-8 mt-3 ">لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است </p>
       <Swiper

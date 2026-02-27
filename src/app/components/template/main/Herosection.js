@@ -82,7 +82,7 @@ export default function HeroToNext() {
 
           <h1 className="text-white text-4xl md:text-4xl font-medium mt-32 mb-4 ">
 
-            کِمای(ChemAI)، بازارگاه تخصصی مواد شیمیایی
+            کِمای(CHEMAI)، بازارگاه تخصصی مواد شیمیایی
           </h1>
           <p className="text-white mb-4"> اتصال مستقیم تامین کنندگان و خریداران مواد اولیه. بدون واسطه، با قیمت شفاف و فرایند مطمئن. </p>
 
@@ -154,7 +154,7 @@ export default function HeroToNext() {
     hover:before:translate-x-full
   "
               >
-                ورود به کمای
+                ورود به کِمای
               </Link>
 
             </div>

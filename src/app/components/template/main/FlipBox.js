@@ -36,7 +36,7 @@ export default function FlipBox() {
     return (
         <div className="py-16 px-4 container font-yekan-bakh">
             <h2 className="text-4xl font-bold text-primary text-center">
-                چرا <strong className="text-orange-500">کمای ؟</strong>
+                چرا <strong className="text-orange-500">کِمای ؟</strong>
             </h2>
             <p className="text-center text-gray-700 mb-8 mt-3 ">تمام فرایند خرید مواد شیمیایی، از استعلام قیمت تا تحویل، در یک پلتفرم امن و شفاف</p>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
