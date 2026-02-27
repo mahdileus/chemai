@@ -19,7 +19,7 @@ const ContactUs = async () => {
 
 
   return (
-    <>
+    <div className="font-yekan-bakh relative overflow-x-hidden">
       <Shape/>
       <ShopNavbar isLogin={!!user}
         userName={userName}
@@ -27,7 +27,7 @@ const ContactUs = async () => {
       <MapBox/>
     
     <Footer/>
-    </>
+    </div>
   );
 };
 

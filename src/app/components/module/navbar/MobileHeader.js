@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { CiMenuFries, CiUser} from "react-icons/ci";
+import { CiMenuFries, CiUser } from "react-icons/ci";
 import { IoMdClose } from "react-icons/io";
 import { PiTelegramLogo, PiInstagramLogo, PiYoutubeLogo } from "react-icons/pi";
 import MobileNav from "./MobileNav";
@@ -32,15 +32,20 @@ export default function MobileHeader({ isLogin }) {
                 ></div>
             )}
 
-            <nav className="block md:hidden w-full py-5 pr-3 pl-1 mx-auto bg-white rounded-xl sticky top-3 shadow-md z-[9999]">
+            <nav className="block md:hidden w-full py-5 pr-3 pl-1 mx-auto bg-primary rounded-xl sticky top-3 shadow-md z-[9999]">
                 <div className="px-5 flex flex-wrap items-center justify-between mx-auto">
                     <button className="p-2" onClick={toggleMobileMenu} type="button">
-                        <CiMenuFries className="text-2xl text-primary" />
+                        <CiMenuFries className="text-2xl text-white" />
                     </button>
 
                     <div>
                         <Link href="/" className="block cursor-pointer text-primary font-kalameh font-bold text-xl">
-                            آرین تجارت تیوان
+                            <img
+                                src="/images/logo-white-2.png"
+                                width={110}
+                                alt="chemai"
+
+                            />
                         </Link>
                     </div>
 
@@ -54,18 +59,11 @@ export default function MobileHeader({ isLogin }) {
             >
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                    <div>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="52.25" height="59.312" viewBox="0 0 52.25 59.312">
-                            <g id="logo" transform="translate(-742.691 -73.077)">
-                                <path id="Path_1894" data-name="Path 1894"
-                                    d="M3750.727,132.389h-19.062V84.241h-13.974V73.077h52.1v8.506h-15.872s0,5.154-3.158,7.52-9.472,1.943-9.472,1.943v14.991h9.44Z"
-                                    transform="translate(-2975)" fill="#173372" />
-                                <path id="Path_1895" data-name="Path 1895"
-                                    d="M3975.384,189.645v10.708h9.569v28.4h17.239V180h-13.974s-.946,4.758-4.154,7.169S3975.384,189.645,3975.384,189.645Z"
-                                    transform="translate(-3207.251 -96.367)" fill="#ff9436" />
-                            </g>
-                        </svg>
-                    </div>
+                    <Link href="/" >
+                        <div>
+                            <img src="/images/chemai-multi.png" width={110} />
+                        </div>
+                    </Link>
                     <button onClick={toggleMobileMenu} className="text-secondery hover:text-red-500">
                         <IoMdClose className="text-2xl text-red-500" />
                     </button>

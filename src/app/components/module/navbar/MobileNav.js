@@ -8,26 +8,12 @@ import { usePathname } from 'next/navigation'
 
 
 const links = [
-    {
-        name: "صفحه اصلی",
-        path: "/",
-    },
-    {
-        name: " داستان کمای",
-        path: "#",
-    },
-    {
-        name: " مقالات ",
-        path: "#",
-    },
-    {
-        name: "  درباره ما",
-        path: "#",
-    },
-    {
-        name: "تماس با ما ",
-        path: "/contact-us",
-    },
+  { name: "صفحه اصلی", path: "/" },
+  { name: "بازارگاه", path: "/shop" },
+  { name: "پلن ها", path: "/plans" },
+  { name: "اخبار", path: "#" },
+  { name: "درباره ما", path: "#" },
+  { name: "تماس با ما", path: "/contact-us" },
 ];
 
 

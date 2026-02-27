@@ -27,7 +27,7 @@ export default function Plans() {
                         <p className="text-3xl font-bold text-gray-900 mt-2">سالانه</p>
 
                         <p className="text-sm text-gray-600 my-2">
-                            این طرح برای همنوعان تنبل من که کار را به آهستگی انجام می‌دهند عالی است.
+                             سبک و سریع؛ برای شروع بدون دردسر و تست پلتفرم و آشنایی با کمای.
                         </p>
                         <h4 className='font-bold text-2xl text-secondery'>رایگان</h4>
 
@@ -39,7 +39,7 @@ export default function Plans() {
     before:skew-x-[-25deg] before:transition-transform before:duration-700
     hover:before:translate-x-full">
 
-                            خرید                     
+                            خرید
                         </button>
 
                     </div>
@@ -58,8 +58,7 @@ export default function Plans() {
                         <p className="text-3xl font-bold text-gray-900 mt-2">سالانه</p>
 
                         <p className="text-sm text-gray-600 my-2">
-                            این طرح برای همنوعان تنبل من که کار را به آهستگی انجام می‌دهند عالی است.
-                        </p>
+                            محکم و اقتصادی؛ برای کسایی که آروم ولی پیوسته جلو می‌رن.                        </p>
                         <h4 className='font-bold text-2xl text-secondery'>6,000,000</h4>
 
                         <button className="relative mt-3 overflow-hidden inline-block px-6 py-2.5
@@ -89,8 +88,7 @@ export default function Plans() {
                         <p className="text-3xl font-bold text-gray-900 mt-2">سالانه</p>
 
                         <p className="text-sm text-gray-600 my-2">
-                            این طرح برای همنوعان تنبل من که کار را به آهستگی انجام می‌دهند عالی است.
-                        </p>
+                            براق و حرفه‌ای؛ وقتی می‌خوای جدی‌تر دیده بشی و اعتماد بسازی.                        </p>
                         <h4 className='font-bold text-2xl text-secondery'>12,000,000</h4>
 
 
@@ -121,8 +119,7 @@ export default function Plans() {
                         <p className="text-3xl font-bold text-gray-900 mt-2">سالانه</p>
 
                         <p className="text-sm text-gray-600 my-2">
-                            این طرح برای همنوعان تنبل من که کار را به آهستگی انجام می‌دهند عالی است.
-                        </p>
+                            لوکس و بی‌رقیب؛ برای وقتی که می‌خوای «تا تهش» بری و بهترین باشی.                        </p>
                         <h4 className='font-bold text-2xl text-secondery'>18,000,000</h4>
 
 
@@ -133,7 +130,7 @@ export default function Plans() {
     before:skew-x-[-25deg] before:transition-transform before:duration-700
     hover:before:translate-x-full">
 
-                         خرید
+                            خرید
 
                         </button>
 

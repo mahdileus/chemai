@@ -7,7 +7,7 @@ import ShopNav from "./ShopNav";
 
 export default function ShopNavbar({ isLogin }) {
     return (
-        <div className="container py-4">
+        <div className="container py-4 font-yekan-bakh">
             <div className="hidden container py-3 relative z-4 mx-auto rounded-full shadow-xl backdrop-blur-2xl lg:flex bg-[#f5f5f53d] items-center justify-around md:px-10">
                 <div className="flex justify-around items-center gap-3">
                     <div>
@@ -48,7 +48,7 @@ export default function ShopNavbar({ isLogin }) {
                font-medium text-lg p-2.5 rounded-3xl hidden md:flex justify-between items-center"
                             >
                                 <CiUser className="text-white" />
-                                <p className="text-sm font-dana font-medium lg:text-base">
+                                <p className="text-sm font-medium lg:text-base">
                                     ورود / ثبت‌نام
                                 </p>
                             </Link>
@@ -70,7 +70,7 @@ export default function ShopNavbar({ isLogin }) {
     hover:before:translate-x-fullp-2.5 rounded-full hidden md:flex justify-between items-center"
                         >
                             <CiUser className="text-white" />
-                            <p className="text-sm font-dana font-medium lg:text-base">
+                            <p className="text-sm font-medium lg:text-base">
                                 حساب کاربری
                             </p>
                         </Link>)}

@@ -112,9 +112,9 @@ export default function HeroToNext() {
           {/* متن سکشن دوم */}
           <div className="font-yekan-bakh relative overflow-hidden order-1">
             <AboutHeader />
-            <div className="flex items-center justify-start gap-4 -mt-8">
+            <div className="flex items-center justify-center md:justify-start gap-4 -mt-8">
               <Link
-                href="#"
+                href="/shop"
                 className="
     relative overflow-hidden
     inline-block
@@ -136,7 +136,7 @@ export default function HeroToNext() {
               </Link>
 
               <Link
-                href="#"
+                href="/login-register"
                 className="
     relative overflow-hidden
     inline-block
